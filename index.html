@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🎓 考研助手智能体</title>
+<style>
+:root{--p:#4f46e5;--pl:#6366f1;--pd:#3730a3;--a:#10b981;--w:#f59e0b;--bg:#f8fafc;--s:#fff;--t:#1e293b;--tm:#64748b;--b:#e2e8f0;--r:12px;--rs:8px;--sh:0 1px 3px rgba(0,0,0,.08)}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;background:var(--bg);color:var(--t);line-height:1.6;min-height:100vh}
+.navbar{background:linear-gradient(135deg,var(--pd),var(--p));color:#fff;position:sticky;top:0;z-index:100;box-shadow:0 2px 10px rgba(79,70,229,.3)}
+.nav-inner{max-width:1200px;margin:0 auto;padding:0 20px;display:flex;align-items:center;justify-content:space-between;height:56px}
+.nav-brand{font-size:1.1rem;font-weight:700;color:#fff;text-decoration:none}
+.nav-links{display:flex;gap:4px;flex-wrap:wrap}
+.nav-links a{color:rgba(255,255,255,.85);text-decoration:none;padding:5px 12px;border-radius:8px;font-size:.85rem;transition:.2s}
+.nav-links a:hover{background:rgba(255,255,255,.15);color:#fff}
+.menu-btn{display:none;background:none;border:none;color:#fff;font-size:1.4rem;cursor:pointer}
+main{max-width:1200px;margin:0 auto;padding:24px 20px}
+.hero{text-align:center;padding:40px 20px 24px}
+.hero h1{font-size:2rem;margin-bottom:8px}
+.hero p{color:var(--tm)}
+.badges{display:flex;justify-content:center;gap:8px;flex-wrap:wrap;margin-top:16px}
+.badges span{background:var(--s);border:1px solid var(--b);padding:6px 14px;border-radius:99px;font-size:.85rem}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px;margin-top:8px}
+.card{background:var(--s);border:1px solid var(--b);border-radius:var(--r);padding:24px 20px;text-decoration:none;color:var(--t);box-shadow:var(--sh);cursor:pointer;transition:.2s;display:flex;gap:12px;align-items:flex-start}
+.card:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(0,0,0,.1);border-color:var(--pl)}
+.icon{font-size:2rem}
+.card h3{font-size:1rem;margin-bottom:4px}
+.card p{font-size:.8rem;color:var(--tm)}
+.badge{display:inline-block;background:var(--bg);padding:2px 8px;border-radius:99px;font-size:.7rem;color:var(--tm);margin-top:4px}
+.section{background:var(--s);border:1px solid var(--b);border-radius:var(--r);padding:24px;margin-top:24px;box-shadow:var(--sh)}
+.section h2{font-size:1.2rem;margin-bottom:16px}
+.steps{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:6px}
+.step{display:flex;flex-direction:column;align-items:center;gap:4px}
+.step-num{width:36px;height:36px;border-radius:50%;background:var(--p);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.9rem}
+.step-label{font-size:.75rem;color:var(--tm)}
+.arrow{color:var(--pl)}
+.warn{border-left:4px solid var(--w)}
+.warn ul{padding-left:20px}
+.warn li{margin-bottom:4px;font-size:.9rem;color:var(--tm)}
+.footer{text-align:center;padding:20px;border-top:1px solid var(--b);color:var(--tm);font-size:.8rem;margin-top:40px}
+.report-layout{display:grid;grid-template-columns:380px 1fr;gap:20px;align-items:start}
+.form-card{background:var(--s);border:1px solid var(--b);border-radius:var(--r);padding:24px;box-shadow:var(--sh);position:sticky;top:72px}
+.form-card h2{font-size:1.1rem;margin-bottom:4px}
+.form-hint{font-size:.8rem;color:var(--tm);margin-bottom:16px}
+.fg{margin-bottom:14px}
+.fg label{display:block;font-weight:600;font-size:.85rem;margin-bottom:4px}
+.req{color:#ef4444}
+input[type=text],input[type=number],textarea,select{width:100%;padding:8px 12px;border:1px solid var(--b);border-radius:var(--rs);font-size:.85rem;font-family:inherit;background:#fff;color:var(--t)}
+input:focus,textarea:focus,select:focus{outline:none;border-color:var(--p);box-shadow:0 0 0 3px rgba(79,70,229,.1)}
+textarea{resize:vertical;min-height:70px}
+.file-up{position:relative}
+.file-up input[type=file]{display:none}
+.file-up label{display:flex;flex-direction:column;align-items:center;gap:2px;padding:16px;border:2px dashed var(--b);border-radius:var(--rs);cursor:pointer;text-align:center;font-size:.85rem}
+.file-up label:hover{border-color:var(--p);background:rgba(79,70,229,.02)}
+.btn-gen{width:100%;padding:12px;background:linear-gradient(135deg,var(--p),var(--pl));color:#fff;border:none;border-radius:var(--rs);font-size:1rem;font-weight:600;cursor:pointer;margin-top:8px;transition:.2s}
+.btn-gen:hover{transform:translateY(-1px)}
+.btn-gen:disabled{opacity:.6;cursor:not-allowed;transform:none}
+.result-box{min-height:400px}
+.placeholder{background:var(--s);border:1px solid var(--b);border-radius:var(--r);padding:60px 40px;text-align:center;box-shadow:var(--sh)}
+.p-icon{font-size:3.5rem;margin-bottom:12px}
+.placeholder h3{color:var(--tm)}
+.report-body{background:var(--s);border:1px solid var(--b);border-radius:var(--r);box-shadow:var(--sh);padding:24px 28px;line-height:1.8;font-size:.9rem}
+.report-body h1{font-size:1.4rem;margin:20px 0 14px;padding-bottom:6px;border-bottom:2px solid var(--b)}
+.report-body h2{font-size:1.15rem;margin:16px 0 10px;color:var(--pd)}
+.report-body h3{font-size:1rem;margin:12px 0 8px}
+.report-body hr{border:none;border-top:1px solid var(--b);margin:16px 0}
+.report-body blockquote{border-left:4px solid var(--pl);margin:10px 0;padding:8px 14px;background:rgba(79,70,229,.04);border-radius:0 var(--rs) var(--rs) 0;color:var(--tm)}
+.report-body table{width:100%;border-collapse:collapse;margin:10px 0;font-size:.85rem}
+.report-body th,.report-body td{border:1px solid var(--b);padding:6px 10px;text-align:left}
+.report-body th{background:var(--bg)}
+.report-body ul,.report-body ol{padding-left:22px;margin:6px 0}
+.report-body li{margin-bottom:3px}
+.toolbar{display:flex;gap:8px;padding:12px 20px;border-bottom:1px solid var(--b);background:var(--s);border-radius:var(--r) var(--r) 0 0}
+.toolbar button{padding:6px 14px;border:1px solid var(--b);border-radius:var(--rs);font-size:.85rem;cursor:pointer;background:#fff}
+.btn-dl{background:var(--p)!important;color:#fff!important;border-color:var(--p)!important}
+.loading{text-align:center;padding:60px}
+.spinner{width:40px;height:40px;border:4px solid var(--b);border-top-color:var(--p);border-radius:50%;animation:spin .7s linear infinite;margin:0 auto 16px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.history{margin-top:30px}
+.history h3{margin-bottom:12px}
+.h-item{display:flex;align-items:center;gap:10px;padding:8px 14px;background:var(--bg);border-radius:var(--rs);margin-bottom:6px;font-size:.85rem}
+.h-item a{color:var(--p);text-decoration:none;margin-left:auto}
+.h-empty{color:var(--tm);text-align:center;padding:20px}
+@media(max-width:800px){.report-layout{grid-template-columns:1fr}.form-card{position:static}.nav-links{display:none;flex-direction:column;position:absolute;top:56px;left:0;right:0;background:var(--pd);padding:12px}.nav-links.show{display:flex}.menu-btn{display:block}.hero h1{font-size:1.5rem}.cards{grid-template-columns:1fr}.steps{flex-direction:column}.arrow{transform:rotate(90deg)}}
+</style>
+</head>
+<body>
+
+<nav class="navbar">
+  <div class="nav-inner">
+    <a href="#" class="nav-brand" onclick="showHome()">🎓 考研助手智能体 <small style="opacity:.7;font-weight:400">v1.0</small></a>
+    <button class="menu-btn" onclick="document.querySelector('.nav-links').classList.toggle('show')" aria-label="菜单">☰</button>
+    <div class="nav-links" id="navLinks">
+      <a href="#" onclick="showHome()">首页</a>
+      <a href="#" onclick="showReport('school_analysis')">🏫 择校</a>
+      <a href="#" onclick="showReport('study_plan')">📅 规划</a>
+      <a href="#" onclick="showReport('knowledge_qa')">💡 答疑</a>
+      <a href="#" onclick="showReport('error_review')">📝 错题</a>
+      <a href="#" onclick="showReport('progress_track')">📊 进度</a>
+    </div>
+  </div>
+</nav>
+
+<main id="app"></main>
+
+<footer class="footer">
+  <p>🎓 考研助手智能体 · Agent 1.0 · 纯前端版 | 基于《人人能懂的AI智能体》方法论</p>
+  <p style="color:var(--w);margin-top:2px">⚠️ AI辅助学习参考 · 数据以研招网（yz.chsi.com.cn）及院校官网当年公布为准</p>
+</footer>
+
+<script>
+// ==================== 数据定义 ====================
+var TEMPLATES={
+school_analysis:{title:"择校分析报告",icon:"🏫",desc:"输入目标专业、院校候选和自身条件，获得难度与匹配度评估",fields:[{id:"target_major",label:"目标专业",type:"text",placeholder:"如：计算机科学与技术",required:!0},{id:"target_schools",label:"候选院校（换行分隔）",type:"textarea",placeholder:"如：\n浙江大学\n上海交通大学",required:!0},{id:"background",label:"本科院校与专业",type:"text",placeholder:"如：XX大学 软件工程（双非）",required:!0},{id:"gpa",label:"本科均分/GPA",type:"text",placeholder:"如：均分82/3.2"},{id:"extra_info",label:"其他信息（竞赛/论文/项目等）",type:"textarea",placeholder:"补充你的优势信息..."}],sections:["一、研究对象","二、应该看什么","三、公开信息整理","四、初步分析","五、主要风险","六、需继续验证","七、初步结论"]},
+study_plan:{title:"复习规划方案",icon:"📅",desc:"输入目标和当前水平，获得四阶段复习时间表",fields:[{id:"target_school_major",label:"目标院校与专业",type:"text",placeholder:"如：浙江大学 计算机专硕",required:!0},{id:"current_level",label:"当前各科水平",type:"textarea",placeholder:"如：\n政治：零基础\n英语：六级550",required:!0},{id:"days_left",label:"距考试剩余天数",type:"number",placeholder:"如：200",required:!0},{id:"daily_hours",label:"每日可用学习时间（小时）",type:"number",placeholder:"如：8",required:!0},{id:"notes",label:"备注",type:"textarea",placeholder:"如：每周日下午休息"}],sections:["一、当前状态盘点","二、总时间表：四阶段","三、阶段目标","四、每周/每日任务","五、资源建议","六、风险与调整"]},
+knowledge_qa:{title:"知识点答疑",icon:"💡",desc:"输入一道题或一个概念，获得拆解、步骤与易错点",fields:[{id:"subject",label:"科目",type:"select",options:["政治","英语","数学（数学一）","数学（数学二）","数学（数学三）","专业课408","其他专业课"],required:!0},{id:"question",label:"题目/概念描述",type:"textarea",placeholder:"把题目或概念写在这里...",required:!0},{id:"your_answer",label:"你的解答（选填）",type:"textarea",placeholder:"已尝试过的思路..."},{id:"confusion_point",label:"卡在哪里？",type:"textarea",placeholder:"具体困惑的点..."}],sections:["一、问题拆解","二、核心概念","三、解题步骤","四、易错点","五、同类变式","六、溯源"]},
+error_review:{title:"错题复盘分析",icon:"📝",desc:"输入错题信息，获得错因分类与改进方案",fields:[{id:"subject",label:"科目",type:"select",options:["政治","英语","数学","专业课408","其他"],required:!0},{id:"topic",label:"知识点",type:"text",placeholder:"如：二重积分、定语从句",required:!0},{id:"question_desc",label:"题目描述",type:"textarea",placeholder:"简述题目...",required:!0},{id:"wrong_answer",label:"错误答案/思路",type:"textarea",placeholder:"当时的解答...",required:!0},{id:"correct_answer",label:"正确答案",type:"textarea",placeholder:"如有正确答案写这里"},{id:"error_image",label:"错题图片（选填）",type:"file",accept:"image/*"}],sections:["一、错题画像","二、错因分类","三、知识漏洞","四、改进动作","五、同类题验证"]},
+progress_track:{title:"进度跟踪报告",icon:"📊",desc:"输入本周学习记录，获得偏差分析与风险提示",fields:[{id:"week_range",label:"本周日期范围",type:"text",placeholder:"如：7月21日-7月27日",required:!0},{id:"plan_summary",label:"本周原计划",type:"textarea",placeholder:"简述本周计划...",required:!0},{id:"completed_tasks",label:"实际完成情况",type:"textarea",placeholder:"✅完成xxx\n⚠️部分完成xxx\n❌未开始xxx",required:!0},{id:"hours_spent",label:"各科实际用时（小时）",type:"textarea",placeholder:"政治：5h\n英语：8h\n数学：20h"},{id:"difficulties",label:"遇到的困难",type:"textarea",placeholder:"本周的阻碍..."}],sections:["一、本周已完成","二、偏差分析","三、下一步重点","四、风险提示"]}
+};
+
+var currentType=null, lastReport=null;
+var history=JSON.parse(localStorage.getItem('ky_reports')||'[]');
+
+function gen(type,data){
+  var t=TEMPLATES[type], now=new Date().toLocaleString('zh-CN');
+  var L=[]; L.push('# '+t.title,'*生成时间：'+now+' | Agent 1.0*','');
+  function h(s){L.push(s,'-'.repeat(40));}
+
+  if(type==='school_analysis'){
+    h(t.sections[0]); L.push('对象：\n- 专业：'+(data.target_major||'待补充')+'\n- 院校：'+(data.target_schools||'待补充')+'\n- 背景：'+(data.background||'待补充')+'\n- GPA：'+(data.gpa||'未提供')+'\n- 优势：'+(data.extra_info||'未提供'));
+    h(t.sections[1]); L.push('1.院校层次 2.专业排名 3.考试科目 4.报录比 5.复试线 6.复试规则 7.地域 8.自身匹配');
+    h(t.sections[2]); L.push('⚠️ 请回各院校官网核实：院校层次、考试科目、近3年报录比与分数线。\n> Agent 1.0 无法实时联网，以上维度需自行核实。');
+    h(t.sections[3]); L.push('院校实力：'+(data.target_schools||'待补充')+' 985院校报录比通常5:1~20:1。\n专业匹配：「'+(data.target_major||'待补充')+'」与「'+(data.background||'待补充')+'」的匹配需评估。\n考试难度：数学一/二/三+专业课是否统考(408)是关键。\n地域：就业资源、生活成本需考虑。');
+    h(t.sections[4]); L.push('1.缩招风险(推免比例上升) 2.专业课改考 3.复试门槛(线低录取高) 4.双非影响 5.信息不对称 6.调剂竞争');
+    h(t.sections[5]); L.push('1.招生简章是否已发布？ 2.近3年实际录取最低分？ 3.研究方向匹配？ 4.能否联系学长？ 5.调剂预案？');
+    h(t.sections[6]); L.push('Agent 1.0 无法获取实时数据，请按冲刺-稳妥-保底三层确定志愿。优先选择专业课与自身优势重叠度高的院校。\n> ⚠️ 不构成录取建议，最终请结合完整数据独立决策。');
+  }else if(type==='study_plan'){
+    var days=parseInt(data.days_left)||0, hrs=parseInt(data.daily_hours)||0;
+    h(t.sections[0]); L.push('目标：'+(data.target_school_major||'待补充')+'\n剩余：'+days+'天 | 每日：'+hrs+'h | 总学时：~'+(days*hrs)+'h\n\n当前水平：\n'+(data.current_level||'待补充'));
+    h(t.sections[1]);
+    if(days>0){var p1=Math.floor(days/4),p2=Math.floor(days/2),p3=Math.floor(days*3/4);
+    L.push('|阶段|时间|天数|任务|\n|---|---|---|---|\n|🟢基础|1-'+p1+'|'+p1+'|教材+框架|\n|🟡强化|'+(p1+1)+'-'+p2+'|'+(p2-p1)+'|重点+专题|\n|🟠冲刺|'+(p2+1)+'-'+p3+'|'+(p3-p2)+'|真题+补漏|\n|🔴模考|'+(p3+1)+'-'+days+'|'+(days-p3)+'|全真+调整|');}
+    h(t.sections[2]); L.push('基础：政治一轮+英语词汇+数学三轮+专业课通读\n强化：习题+真题精练+专题刷题\n冲刺：分析题+套题+近10年真题\n模考：全真模拟+生物钟调整');
+    h(t.sections[3]); L.push('每日('+hrs+'h)：上午数学'+Math.floor(hrs*.35)+'h | 下午专业课'+Math.floor(hrs*.3)+'h | 傍晚英语'+Math.floor(hrs*.2)+'h | 晚上政治/复盘'+Math.floor(hrs*.15)+'h\n周一至六执行，周日复盘调整。'+(data.notes?'\n备注：'+data.notes:''));
+    h(t.sections[4]); L.push('|科|教材|课|\n|---|---|---|\n|政|肖秀荣|徐涛/腿姐|\n|英|张剑|唐迟|\n|数|全书/18讲|张宇/汤|\n|专|指定教材|网课|');
+    h(t.sections[5]); L.push('风险：1.落后<2周→周末追赶 >2周→重评目标 2.卡壳→标注后推进 3.疲劳→每6周轻量周 4.9月查简章 5.模考暴露问题不恐慌');
+  }else if(type==='knowledge_qa'){
+    var s=data.subject||'待补充', q=data.question||'待补充';
+    h(t.sections[0]); L.push('科目：'+s+'\n题目：'+q+'\n考察：知识理解+方法运用+逻辑推理');
+    h(t.sections[1]); L.push('> 关键在识别条件与变量关系，找到对应概念和定理，按标准方法论推导。\n*(1.0无法联网，建议结合教材深入研究)*');
+    h(t.sections[2]); L.push('Step1审题→Step2定位知识点→Step3选解题路径→Step4逐步推导(标注定理)⚠️注意符号边界→Step5验证');
+    h(t.sections[3]); L.push(s+'常见错：1.审题遗漏 2.计算失误 3.概念混淆(可导vs连续) 4.方法误用 5.跳步\n提醒：确认条件完整、挖掘隐藏条件、验证量纲');
+    h(t.sections[4]); L.push('变式一(基础迁移)：改条件练迁移\n变式二(提升)：加干扰条件\n> 从真题选1-2道同知识点自测');
+    h(t.sections[5]); L.push('科目：'+s+'\n模块：待定位\n教材：待确定\n考纲：查当年大纲\n> 💡 收录错题本，定期回顾');
+  }else if(type==='error_review'){
+    h(t.sections[0]); L.push('|维度|详情|\n|---|---|\n|科目|'+(data.subject||'')+'|\n|知识点|'+(data.topic||'')+'|\n|题目|'+(data.question_desc||'')+'|\n|你的答案|'+(data.wrong_answer||'')+'|\n|正确答案|'+(data.correct_answer||'未提供')+'|');
+    h(t.sections[1]); L.push('🔴概念不清⭐⭐⭐ | 🟡计算失误⭐⭐ | 🟠审题偏差⭐⭐ | 🟢方法不会⭐ | 🔵时间不够⭐');
+    h(t.sections[2]); L.push('直接漏洞：「'+(data.topic||'')+'」理解偏差\n关联漏洞：前置知识薄弱\n方法漏洞：解题套路不熟\n→回教材+做5道同类题检验');
+    h(t.sections[3]); L.push('短期：重学教材+重做本题+3-5同类题\n中期：加入回顾清单\n长期：建错题本+每周复盘+统计错因');
+    h(t.sections[4]); L.push('真题1道+习题集1道，限时完成，全对通过。');
+  }else if(type==='progress_track'){
+    h(t.sections[0]); L.push('周期：'+(data.week_range||'')+'\n完成：\n'+(data.completed_tasks||'')+'\n用时：\n'+(data.hours_spent||'未统计'));
+    h(t.sections[1]); L.push('计划：\n'+(data.plan_summary||'')+'\n\n偏差：✅完成 ⚠️部分 ❌未开始\n原因：计划过量/效率/突发事件\n'+(data.difficulties||''));
+    h(t.sections[2]); L.push('🔴P0：遗留任务+薄弱巩固\n🟡P1：常规推进+漏洞修补\n🟢P2：额外刷题+笔记');
+    h(t.sections[3]); L.push('🟢低：单周<10%→周末补\n🟡中：连2周>20%→调整\n🟠高：连3周>30%→重评可行性\n🔴严重：关键科未推进→降档目标\n\n> 1.0无自动追踪，2.0将支持长期记忆。');
+  }
+
+  L.push('\n---\n### 📋 待验证\n1.院校信息回官网核实\n2.分数线以官方为准\n3.招生简章每年可能调整\n\n> ⚠️ 本报告为AI辅助生成，数据以**研招网(yz.chsi.com.cn)**及**院校官网**当年公布为准。不构成录取承诺。');
+  return L.join('\n');
+}
+
+function md2html(md){
+  var h=md.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  h=h.replace(/^### (.+)$/gm,'<h3>$1</h3>').replace(/^## (.+)$/gm,'<h2>$1</h2>').replace(/^# (.+)$/gm,'<h1>$1</h1>');
+  h=h.replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>').replace(/\*(.+?)\*/g,'<em>$1</em>');
+  h=h.replace(/^---$/gm,'<hr>').replace(/^> (.+)$/gm,'<blockquote>$1</blockquote>');
+  h=h.replace(/^- (.+)$/gm,'<li>$1</li>');
+  h=h.replace(/^\|(.+)\|$/gm,function(m){var c=m.split('|').filter(function(x){return x.trim()});if(c.every(function(x){return /^-+$/.test(x.trim())}))return'';return'<tr>'+c.map(function(x){var t=x.trim();return t.indexOf('**')===0?'<th>'+t+'</th>':'<td>'+t+'</td>'}).join('')+'</tr>'});
+  h=h.replace(/\n\n/g,'</p><p>').replace(/\n/g,'<br>');
+  h=h.replace(/(<tr>[\s\S]*?<\/tr>)+/g,'<table>$&</table>');
+  h=h.replace(/(<li>[\s\S]*?<\/li>)+/g,'<ul>$&</ul>');
+  return'<p>'+h+'</p>';
+}
+
+function showHome(){
+  currentType=null;
+  var H='<div class="hero"><h1>🎓 考研助手智能体</h1><p>AI考研规划与学习助手 · Agent 1.0</p><div class="badges"><span>🔍观察</span><span>🧠思考</span><span>💾记忆</span><span>⚡行动</span><span>🔄反思</span></div></div><div class="cards">';
+  for(var k in TEMPLATES){var t=TEMPLATES[k];H+='<div class="card" onclick="showReport(\''+k+'\')"><span class="icon">'+t.icon+'</span><div><h3>'+t.title+'</h3><p>'+t.desc+'</p><span class="badge">'+t.sections.length+'个分析维度</span></div></div>';}
+  H+='</div><div class="section"><h2>⚙️ 工作流程</h2><div class="steps">';
+  ['确认对象','研究框架','调工具检索','提取信息','结构化报告','列待验证'].forEach(function(s,i){H+='<div class="step"><div class="step-num">'+(i+1)+'</div><div class="step-label">'+s+'</div></div>'+(i<5?'<span class="arrow">→</span>':'');});
+  H+='</div></div><div class="section warn"><h2>⚠️ 必守红线</h2><ul><li>不承诺录取，不替用户做人生决定</li><li>报录比/分数线以官方当年公布为准</li><li>缺数据标注「未取到」，禁止编造</li><li>每次输出带「待验证问题」栏</li></ul></div>';
+  document.getElementById('app').innerHTML=H;
+  document.getElementById('navLinks').classList.remove('show');
+}
+
+function showReport(type){
+  currentType=type; var t=TEMPLATES[type];
+  var H='<div style="margin-bottom:16px"><a href="#" onclick="showHome();return false" style="color:var(--p);text-decoration:none;font-size:.9rem">← 返回</a></div>';
+  H+='<h1 style="font-size:1.6rem;margin-bottom:4px">'+t.icon+' '+t.title+'</h1><p style="color:var(--tm);margin-bottom:20px">'+t.desc+'</p>';
+  H+='<div class="report-layout"><div class="form-card"><h2>📋 填写信息</h2><p class="form-hint">越详细，报告越精准</p><form id="rf" onsubmit="return handleSubmit(event)">';
+  t.fields.forEach(function(f){
+    H+='<div class="fg"><label for="'+f.id+'">'+f.label+(f.required?'<span class="req">*</span>':'')+'</label>';
+    if(f.type==='text') H+='<input type="text" id="'+f.id+'" placeholder="'+(f.placeholder||'')+'" '+(f.required?'required':'')+'>';
+    else if(f.type==='textarea') H+='<textarea id="'+f.id+'" placeholder="'+(f.placeholder||'')+'" rows="3" '+(f.required?'required':'')+'></textarea>';
+    else if(f.type==='number') H+='<input type="number" id="'+f.id+'" placeholder="'+(f.placeholder||'')+'" min="1" '+(f.required?'required':'')+'>';
+    else if(f.type==='select'){H+='<select id="'+f.id+'" '+(f.required?'required':'')+'><option value="">-- 请选择 --</option>'; (f.options||[]).forEach(function(o){H+='<option>'+o+'</option>';}); H+='</select>';}
+    else if(f.type==='file') H+='<div class="file-up"><input type="file" id="'+f.id+'" accept="'+(f.accept||'')+'" onchange="previewFile(this)"><label for="'+f.id+'">📁 点击上传图片</label><div id="'+f.id+'-preview" style="margin-top:4px;font-size:.8rem;color:var(--a)"></div></div>';
+    H+='</div>';
+  });
+  H+='<button type="submit" class="btn-gen" id="btnGen">🚀 生成报告</button></form></div>';
+  H+='<div class="result-box"><div id="rp" class="placeholder"><div class="p-icon">📄</div><h3>报告在此展示</h3><p style="color:var(--tm);margin-top:8px">填写表单后点生成</p></div>';
+  H+='<div id="rl" class="loading" style="display:none"><div class="spinner"></div><p>Agent分析中...</p></div>';
+  H+='<div id="rc" style="display:none"><div class="toolbar"><button onclick="dlReport()" class="btn-dl">📥 下载MD</button><button onclick="showReport(\''+type+'\')">🔄 重新</button></div><div class="report-body" id="rb"></div></div></div></div>';
+  H+='<div class="history"><h3>📚 历史</h3><div id="hl"><p class="h-empty">暂无</p></div></div>';
+  document.getElementById('app').innerHTML=H;
+  document.getElementById('navLinks').classList.remove('show');
+  renderHistory(); window.scrollTo(0,0);
+}
+
+function previewFile(input){var p=document.getElementById(input.id+'-preview');if(input.files[0])p.innerHTML='📎 '+input.files[0].name+' ('+(input.files[0].size/1024).toFixed(1)+' KB)';else p.innerHTML='';}
+
+function handleSubmit(e){
+  e.preventDefault();
+  var t=TEMPLATES[currentType], data={};
+  t.fields.forEach(function(f){if(f.type!=='file')data[f.id]=document.getElementById(f.id).value;});
+  var btn=document.getElementById('btnGen'); btn.disabled=!0; btn.textContent='⏳';
+  document.getElementById('rp').style.display='none';
+  document.getElementById('rc').style.display='none';
+  document.getElementById('rl').style.display='block';
+  setTimeout(function(){
+    var c=gen(currentType,data);
+    document.getElementById('rl').style.display='none';
+    document.getElementById('rc').style.display='block';
+    document.getElementById('rb').innerHTML=md2html(c);
+    lastReport={type:currentType,content:c,time:new Date().toISOString()};
+    history.unshift(lastReport); if(history.length>50)history.length=50;
+    localStorage.setItem('ky_reports',JSON.stringify(history));
+    renderHistory();
+    document.getElementById('rc').scrollIntoView({behavior:'smooth'});
+    btn.disabled=!1; btn.textContent='🚀 生成报告';
+  },600);
+}
+
+function renderHistory(){
+  var el=document.getElementById('hl'); if(!el)return;
+  if(!history.length){el.innerHTML='<p class="h-empty">暂无记录</p>';return;}
+  el.innerHTML=history.slice(0,20).map(function(r,i){
+    var t=TEMPLATES[r.type], d=new Date(r.time);
+    return'<div class="h-item"><span>'+t.icon+'</span><span style="flex:1">'+t.title+'</span><span style="font-size:.75rem;color:var(--tm)">'+d.toLocaleString('zh-CN')+'</span><a href="#" onclick="loadHist('+i+');return false">查看</a></div>';
+  }).join('');
+}
+
+function loadHist(i){var r=history[i];showReport(r.type);setTimeout(function(){document.getElementById('rp').style.display='none';document.getElementById('rc').style.display='block';document.getElementById('rb').innerHTML=md2html(r.content);lastReport=r;},300);}
+
+function dlReport(){if(!lastReport)return;var b=new Blob([lastReport.content],{type:'text/markdown;charset=utf-8'});var a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=lastReport.type+'_'+new Date().toISOString().slice(0,10)+'.md';a.click();}
+
+showHome();
+</script>
+</body>
+</html>
