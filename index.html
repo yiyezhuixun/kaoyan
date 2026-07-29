@@ -123,20 +123,20 @@ textarea{resize:vertical;min-height:70px}
 
 <footer class="footer">
   <p>🎓 考研助手智能体 · Agent 2.0 · 基于《人人能懂的AI智能体》方法论</p>
-  <p style="color:var(--w);margin-top:2px">🤖 Claude AI 驱动 | ⚠️ 数据以研招网（yz.chsi.com.cn）及院校官网当年公布为准</p>
+  <p style="color:var(--w);margin-top:2px">🤖 DeepSeek AI 驱动 | ⚠️ 数据以研招网（yz.chsi.com.cn）及院校官网当年公布为准</p>
 </footer>
 
 <script>
 // ==================== 核心配置 ====================
-var API_URL = 'https://api.anthropic.com/v1/messages';
-var MODEL = 'claude-sonnet-4-20250514';
+var API_URL = 'https://api.deepseek.com/v1/chat/completions';
+var MODEL = 'deepseek-chat';
 
 function getApiKey(){ return localStorage.getItem('ky_apikey')||''; }
 function setApiKey(k){ localStorage.setItem('ky_apikey',k); updateAiDot(); }
 function updateAiDot(){
   var d=document.getElementById('aiDot'); if(!d)return;
   d.className='ai-dot '+(getApiKey()?'dot-on':'dot-off');
-  d.title=getApiKey()?'AI 已就绪 (Claude)':'AI 未配置 - 请点 ⚙️ 设置 API Key';
+  d.title=getApiKey()?'AI 已就绪 (DeepSeek)':'AI 未配置 - 请点 ⚙️ 设置 API Key';
 }
 
 // ==================== 数据定义 ====================
@@ -148,7 +148,7 @@ error_review:{title:"错题复盘分析",icon:"📝",desc:"输入错题信息，
 progress_track:{title:"进度跟踪报告",icon:"📊",desc:"输入本周学习记录，获得偏差分析与下周规划",fields:[{id:"week_range",label:"本周日期范围",type:"text",placeholder:"如：7月21日-7月27日",required:!0},{id:"plan_summary",label:"本周原计划",type:"textarea",placeholder:"简述本周计划完成的内容...",required:!0},{id:"completed_tasks",label:"实际完成情况",type:"textarea",placeholder:"✅完成xxx\n⚠️部分完成xxx\n❌未开始xxx",required:!0},{id:"hours_spent",label:"各科实际用时（小时）",type:"textarea",placeholder:"政治：5h\n英语：8h\n数学：20h\n专业课：15h"},{id:"difficulties",label:"遇到的困难",type:"textarea",placeholder:"本周的阻碍..."}],sections:["一、本周已完成","二、偏差分析：计划vs实际","三、下一步重点","四、风险提示"]}
 };
 
-// ==================== Claude 系统提示词 ====================
+// ==================== DeepSeek 系统提示词 ====================
 function getSystemPrompt(reportType){
   var t=TEMPLATES[reportType];
   return '你是一个 AI 考研规划与学习助手。你的任务不是替学生做决定，也不是承诺录取，而是帮助用户基于公开信息和自身情况，完成考研的择校、规划、答疑与复盘。\n\n四个关键点：\n- 身份：研究型学习助理，不是顾问式聊天。\n- 任务边界：只做规划、答疑、复盘辅助，不替学生决定人生，不承诺“一定能上岸”。\n- 工作步骤：先拆解，再检索，再分析，再输出。\n- 风险限制：标注不确定信息；涉及分数线/报录比等数据，必须提示“以官方最新公布为准”。\n\n处理任何任务时，固定走 6 步流程：\n1. 确认研究对象\n2. 生成研究框架\n3. 调用搜索或资料工具\n4. 提取关键信息\n5. 生成结构化报告\n6. 列出待验证问题\n\n必须遵守的约束：\n1. 不承诺录取结果，不替用户做人生决定。\n2. 涉及报录比、分数线、招生目录等，必须提示“以研招网及院校官网当年最新公布为准”。\n3. 信息缺失时明确写“未取到 / 需补充”，禁止胡乱补全。\n4. 先拆解再结论，先流程再输出；宁可多问一句，不要凭空给方案。\n5. 每次输出都带“待验证问题”栏。\n6. 诚实标注自身弱点，引导用户去官方核实。\n\n现在你需要生成一份 **' + t.title + '**。' +
@@ -167,24 +167,24 @@ function buildUserPrompt(reportType, data){
 }
 
 // ==================== AI 调用 ====================
-async function callClaude(systemPrompt, userPrompt){
+async function callAI(systemPrompt, userPrompt){
   var key = getApiKey();
   var resp = await fetch(API_URL, {
     method:'POST',
-    headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
-    body:JSON.stringify({model:MODEL,max_tokens:4096,temperature:0.7,system:systemPrompt,messages:[{role:'user',content:userPrompt}]})
+    headers:{'Content-Type':'application/json','Authorization':'Bearer '+key},
+    body:JSON.stringify({model:MODEL,max_tokens:4096,temperature:0.7,messages:[{role:'system',content:systemPrompt},{role:'user',content:userPrompt}]})
   });
   if(!resp.ok){var e=await resp.text();throw new Error('API Error '+resp.status+': '+e.slice(0,200));}
   var j=await resp.json();
-  return j.content[0].text;
+  return j.choices[0].message.content;
 }
 
-async function callClaudeStream(systemPrompt, userPrompt, onChunk){
+async function callAIStream(systemPrompt, userPrompt, onChunk){
   var key = getApiKey();
   var resp = await fetch(API_URL, {
     method:'POST',
-    headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
-    body:JSON.stringify({model:MODEL,max_tokens:4096,temperature:0.7,system:systemPrompt,messages:[{role:'user',content:userPrompt}],stream:!0})
+    headers:{'Content-Type':'application/json','Authorization':'Bearer '+key},
+    body:JSON.stringify({model:MODEL,max_tokens:4096,temperature:0.7,messages:[{role:'system',content:systemPrompt},{role:'user',content:userPrompt}],stream:!0})
   });
   if(!resp.ok){var e=await resp.text();throw new Error('API Error '+resp.status+': '+e.slice(0,200));}
   var reader=resp.body.getReader(),decoder=new TextDecoder(),full='',buffer='';
@@ -196,7 +196,7 @@ async function callClaudeStream(systemPrompt, userPrompt, onChunk){
     for(var i=0;i<lines.length;i++){
       var line=lines[i].trim(); if(!line.startsWith('data: '))continue;
       var data=line.slice(6); if(data==='[DONE]')continue;
-      try{var j=JSON.parse(data);if(j.type==='content_block_delta'&&j.delta&&j.delta.text){full+=j.delta.text;onChunk(full);}}catch(ignore){}
+      try{var j=JSON.parse(data);var c=j.choices&&j.choices[0];if(c&&c.delta&&c.delta.content){full+=c.delta.content;onChunk(full);}}catch(ignore){}
     }
   }
   return full;
@@ -206,7 +206,7 @@ async function callClaudeStream(systemPrompt, userPrompt, onChunk){
 function genFallback(type,data){
   var t=TEMPLATES[type], now=new Date().toLocaleString('zh-CN');
   var L=[]; L.push('# '+t.title,'*生成时间：'+now+' | 离线模板模式 | 请配置 API Key 获得 AI 分析*','');
-  L.push('> ⚠️ **当前为离线模板模式**，内容为固定框架。点击右上角 ⚙️ 设置 Claude API Key 后，将由 AI 针对你的实际情况生成个性化分析。','');
+  L.push('> ⚠️ **当前为离线模板模式**，内容为固定框架。点击右上角 ⚙️ 设置 DeepSeek API Key 后，将由 AI 针对你的实际情况生成个性化分析。','');
   function h(s){L.push('## '+s,'');}
   t.sections.forEach(function(s,i){
     h(s);
@@ -218,7 +218,7 @@ function genFallback(type,data){
     L.push('*（此部分在 AI 模式下将生成针对性分析。当前为模板框架，请配置 API Key 启用 AI。）*');
     L.push('');
   });
-  L.push('\n---\n### 📋 待验证\n1.院校信息回官网核实\n2.分数线以官方为准\n3.招生简章每年可能调整\n\n> ⚠️ 本报告为模板生成。**配置 Claude API Key 后获得 AI 个性化分析**。数据以研招网(yz.chsi.com.cn)及院校官网为准。');
+  L.push('\n---\n### 📋 待验证\n1.院校信息回官网核实\n2.分数线以官方为准\n3.招生简章每年可能调整\n\n> ⚠️ 本报告为模板生成。**配置 DeepSeek API Key 后获得 AI 个性化分析**。数据以研招网(yz.chsi.com.cn)及院校官网为准。');
   return L.join('\n');
 }
 
@@ -242,8 +242,8 @@ var history=JSON.parse(localStorage.getItem('ky_reports')||'[]');
 
 function showHome(){
   currentType=null;
-  var ai=getApiKey()?'<span style="color:var(--a)">🤖 AI 模式已就绪 (Claude)</span>':'<span style="color:var(--w)">⚠️ 未配置 API - 点击右上角 ⚙️ 设置</span>';
-  var H='<div class="hero"><h1>🎓 考研助手智能体</h1><p>AI 考研规划与学习助手 · Claude 驱动 · Agent 2.0</p><p style="margin-top:8px;font-size:.9rem">'+ai+'</p><div class="badges"><span>🔍观察</span><span>🧠思考</span><span>💾记忆</span><span>⚡行动</span><span>🔄反思</span></div></div><div class="cards">';
+  var ai=getApiKey()?'<span style="color:var(--a)">🤖 AI 模式已就绪 (DeepSeek)</span>':'<span style="color:var(--w)">⚠️ 未配置 API - 点击右上角 ⚙️ 设置</span>';
+  var H='<div class="hero"><h1>🎓 考研助手智能体</h1><p>AI 考研规划与学习助手 · DeepSeek 驱动 · Agent 2.0</p><p style="margin-top:8px;font-size:.9rem">'+ai+'</p><div class="badges"><span>🔍观察</span><span>🧠思考</span><span>💾记忆</span><span>⚡行动</span><span>🔄反思</span></div></div><div class="cards">';
   for(var k in TEMPLATES){var t=TEMPLATES[k];H+='<div class="card" onclick="showReport(\''+k+'\')"><span class="icon">'+t.icon+'</span><div><h3>'+t.title+'</h3><p>'+t.desc+'</p><span class="badge">'+t.sections.length+'个分析维度</span></div></div>';}
   H+='</div><div class="section"><h2>⚙️ Agent 工作流程</h2><div class="steps">';
   ['确认对象','研究框架','调工具检索','提取信息','结构化报告','列待验证'].forEach(function(s,i){H+='<div class="step"><div class="step-num">'+(i+1)+'</div><div class="step-label">'+s+'</div></div>'+(i<5?'<span style="color:var(--pl);font-size:1.2rem">→</span>':'');});
@@ -269,8 +269,8 @@ function showReport(type){
   });
   var hasApi=getApiKey();
   H+='<button type="submit" class="btn-gen" id="btnGen">'+(hasApi?'🤖 AI 生成报告':'📋 模板生成报告')+'</button>';
-  if(!hasApi) H+='<p class="api-badge"><span style="color:var(--w)">⚠️</span> <span onclick="showSettings()" style="color:var(--p);cursor:pointer;text-decoration:underline">设置 Claude API Key</span> 启用 AI 分析</p>';
-  else H+='<p class="api-badge"><span style="color:var(--a)">🤖</span> AI 模式 · 将由 Claude 生成个性化分析</p>';
+  if(!hasApi) H+='<p class="api-badge"><span style="color:var(--w)">⚠️</span> <span onclick="showSettings()" style="color:var(--p);cursor:pointer;text-decoration:underline">设置 DeepSeek API Key</span> 启用 AI 分析</p>';
+  else H+='<p class="api-badge"><span style="color:var(--a)">🤖</span> AI 模式 · 将由 DeepSeek 生成个性化分析</p>';
   H+='</form></div>';
   H+='<div class="result-box"><div id="rp" class="placeholder"><div class="p-icon">📄</div><h3>报告在此展示</h3><p style="color:var(--tm);margin-top:8px">填写表单后点生成</p></div>';
   H+='<div id="rl" class="loading" style="display:none"><div class="spinner"></div><p id="rl-text">AI 正在分析...</p></div>';
@@ -285,8 +285,8 @@ function showSettings(){
   var key=getApiKey();
   var H='<div style="margin-bottom:16px"><a href="#" onclick="showHome();return false" style="color:var(--p);text-decoration:none;font-size:.9rem">← 返回</a></div>';
   H+='<h1 style="font-size:1.6rem;margin-bottom:16px">⚙️ API 设置</h1>';
-  H+='<div class="settings-panel"><label>Claude API Key</label><p class="hint">密钥仅存储在浏览器本地，直连 Anthropic API。</p><p class="hint">获取 Key：<a href="https://console.anthropic.com/" target="_blank">console.anthropic.com</a> → API Keys</p>';
-  H+='<input type="password" id="apikey-input" placeholder="sk-ant-api03-..." value="'+key.replace(/"/g,'&quot;')+'" style="width:100%;padding:10px;border:1px solid var(--b);border-radius:var(--rs);font-size:.9rem;font-family:monospace">';
+  H+='<div class="settings-panel"><label>DeepSeek API Key</label><p class="hint">密钥仅存储在浏览器本地，直连 DeepSeek API。</p><p class="hint">获取 Key：<a href="https://platform.deepseek.com/api_keys" target="_blank">platform.deepseek.com</a> → API Keys</p>';
+  H+='<input type="password" id="apikey-input" placeholder="sk-..." value="'+key.replace(/"/g,'&quot;')+'" style="width:100%;padding:10px;border:1px solid var(--b);border-radius:var(--rs);font-size:.9rem;font-family:monospace">';
   H+='<div class="btn-row"><button class="btn-save" onclick="saveApiKey()">💾 保存</button><button onclick="clearApiKey()">🗑 清除</button><button onclick="testApiKey()">🔍 测试连接</button></div>';
   H+='<div id="api-status" style="margin-top:12px;font-size:.85rem"></div></div>';
   document.getElementById('app').innerHTML=H;
@@ -297,7 +297,7 @@ function clearApiKey(){setApiKey('');document.getElementById('apikey-input').val
 async function testApiKey(){
   var st=document.getElementById('api-status'); st.innerHTML='<span style="color:var(--w)">⏳ 测试中...</span>';
   try{
-    var r=await fetch(API_URL,{method:'POST',headers:{'Content-Type':'application/json','x-api-key':getApiKey(),'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:MODEL,max_tokens:10,messages:[{role:'user',content:'hi'}]})});
+    var r=await fetch(API_URL,{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+getApiKey()},body:JSON.stringify({model:MODEL,max_tokens:10,messages:[{role:'user',content:'hi'}]})});
     if(r.ok) st.innerHTML='<span style="color:var(--a)">✅ 连接成功！API Key 有效</span>';
     else{var e=await r.text();st.innerHTML='<span style="color:#ef4444">❌ 失败：'+e.slice(0,150)+'</span>';}
   }catch(err){st.innerHTML='<span style="color:#ef4444">❌ 网络错误：'+err.message+'</span>';}
@@ -325,13 +325,13 @@ async function handleSubmit(e){
   }else{
     // AI 模式
     var sp=getSystemPrompt(currentType), up=buildUserPrompt(currentType,data);
-    document.getElementById('rl-text').textContent='🤖 Claude 正在分析...';
+    document.getElementById('rl-text').textContent='🤖 DeepSeek 正在分析...';
     document.getElementById('rb').innerHTML='<div class="streaming" id="stream-content"></div>';
     document.getElementById('rl').style.display='none';
     document.getElementById('rc').style.display='block';
 
     try{
-      var fullText=await callClaudeStream(sp,up,function(text){
+      var fullText=await callAIStream(sp,up,function(text){
         document.getElementById('stream-content').innerHTML=md2html(text);
         document.getElementById('stream-content').classList.add('streaming');
       });
@@ -342,7 +342,7 @@ async function handleSubmit(e){
       localStorage.setItem('ky_reports',JSON.stringify(history));
       renderHistory();
     }catch(err){
-      document.getElementById('rb').innerHTML='<div style="color:#ef4444;padding:20px"><strong>❌ AI 调用失败</strong><p>'+err.message+'</p><p style="margin-top:12px">请检查：<br>1. API Key 是否正确<br>2. 网络是否能访问 api.anthropic.com<br>3. API Key 是否有余额</p></div>';
+      document.getElementById('rb').innerHTML='<div style="color:#ef4444;padding:20px"><strong>❌ AI 调用失败</strong><p>'+err.message+'</p><p style="margin-top:12px">请检查：<br>1. API Key 是否正确<br>2. 网络是否能访问 api.deepseek.com<br>3. API Key 是否有余额</p></div>';
       document.getElementById('rl').style.display='none';
       document.getElementById('rc').style.display='block';
     }
