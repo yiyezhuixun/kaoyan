@@ -238,7 +238,7 @@ function md2html(md){
 
 // ==================== 页面渲染 ====================
 var currentType=null, lastReport=null;
-var history=JSON.parse(localStorage.getItem('ky_reports')||'[]');
+var repHistory=JSON.parse(localStorage.getItem('ky_reports')||'[]');
 
 function showHome(){
   currentType=null;
@@ -338,8 +338,8 @@ async function handleSubmit(e){
       document.getElementById('stream-content').classList.remove('streaming');
       document.getElementById('rb').innerHTML=md2html(fullText);
       lastReport={type:currentType,content:fullText,time:new Date().toISOString(),ai:!0};
-      history.unshift(lastReport); if(history.length>50)history.length=50;
-      localStorage.setItem('ky_reports',JSON.stringify(history));
+      repHistory.unshift(lastReport); if(repHistory.length>50)repHistory.length=50;
+      localStorage.setItem('ky_reports',JSON.stringify(repHistory));
       renderHistory();
     }catch(err){
       document.getElementById('rb').innerHTML='<div style="color:#ef4444;padding:20px"><strong>❌ AI 调用失败</strong><p>'+err.message+'</p><p style="margin-top:12px">请检查：<br>1. API Key 是否正确<br>2. 网络是否能访问 api.deepseek.com<br>3. API Key 是否有余额</p></div>';
@@ -355,23 +355,23 @@ function showResult(content,type){
   document.getElementById('rc').style.display='block';
   document.getElementById('rb').innerHTML=md2html(content);
   lastReport={type:type,content:content,time:new Date().toISOString(),ai:!1};
-  history.unshift(lastReport); if(history.length>50)history.length=50;
-  localStorage.setItem('ky_reports',JSON.stringify(history));
+  repHistory.unshift(lastReport); if(repHistory.length>50)repHistory.length=50;
+  localStorage.setItem('ky_reports',JSON.stringify(repHistory));
   renderHistory();
   document.getElementById('rc').scrollIntoView({behavior:'smooth'});
 }
 
 function renderHistory(){
   var el=document.getElementById('hl'); if(!el)return;
-  if(!history.length){el.innerHTML='<p class="h-empty">暂无记录</p>';return;}
-  el.innerHTML=history.slice(0,20).map(function(r,i){
+  if(!repHistory.length){el.innerHTML='<p class="h-empty">暂无记录</p>';return;}
+  el.innerHTML=repHistory.slice(0,20).map(function(r,i){
     var t=TEMPLATES[r.type], d=new Date(r.time);
     var label=(r.ai?'🤖 ':'📋 ')+t.title;
     return'<div class="h-item"><span>'+t.icon+'</span><span style="flex:1">'+label+'</span><span style="font-size:.75rem;color:var(--tm)">'+d.toLocaleString('zh-CN')+'</span><a href="#" onclick="loadHist('+i+');return false">查看</a></div>';
   }).join('');
 }
 
-function loadHist(i){var r=history[i];showReport(r.type);setTimeout(function(){document.getElementById('rp').style.display='none';document.getElementById('rc').style.display='block';document.getElementById('rb').innerHTML=md2html(r.content);lastReport=r;},300);}
+function loadHist(i){var r=repHistory[i];showReport(r.type);setTimeout(function(){document.getElementById('rp').style.display='none';document.getElementById('rc').style.display='block';document.getElementById('rb').innerHTML=md2html(r.content);lastReport=r;},300);}
 function dlReport(){if(!lastReport)return;var b=new Blob([lastReport.content],{type:'text/markdown;charset=utf-8'});var a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=lastReport.type+'_'+new Date().toISOString().slice(0,10)+'.md';a.click();}
 
 // 初始化
